@@ -1,10 +1,9 @@
-import copy
 import random
-
 from src.GraphInterface import GraphInterface
 
 
 class Node:
+    """This abstract class represents a vertex."""
 
     def __init__(self, key: int, pos: tuple = None):
         self.key = key
@@ -24,9 +23,6 @@ class Node:
 
     def get_pos(self):
         return self.pos
-
-    def set_pos(self, p):
-        self.pos = p
 
     def get_weight(self) -> float:
         return self.weight
@@ -109,12 +105,32 @@ class DiGraph(GraphInterface):
         self.mc = 0
 
     def get_node(self, node_id: int) -> Node:
+        """
+        Returns the ID of the node
+        @param node_id:
+        @return:The ID of the node
+        """
         return self.nodes.get(node_id)
 
     def get_edge(self, id1: int, id2: int) -> float:
+        """
+        Returns the weight of the edge between id1 to id2
+        @param id1:
+        @param id2:
+        @return: The weight of the edge
+        """
         if not self.has_edge(id1, id2):
             return -1
         return self.get_node(id1).get_hashOut().get(id2)
+
+    def has_edge(self, id1: int, id2: int) -> bool:
+        """
+        Returns if there is an edge between id1 to id2
+        @param id1:
+        @param id2:
+        @return: True if there is an edge False if not
+        """
+        return not self.get_node(id1).get_hashOut().get(id2) is None
 
     def v_size(self) -> int:
         """
@@ -238,6 +254,7 @@ class DiGraph(GraphInterface):
                 return True
         return False
 
-    def has_edge(self, id1: int, id2: int) -> bool:
-        return not self.get_node(id1).get_hashOut().get(id2) is None
-
+    def __eq__(self, other):
+        if other is None or self.__class__ != other.__class__:
+            return False
+        return self.nodes.__eq__(other.nodes)

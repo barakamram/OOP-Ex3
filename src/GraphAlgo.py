@@ -1,16 +1,13 @@
 import json
 from typing import List
-
 from queue import PriorityQueue
-
 from matplotlib.patches import ConnectionPatch
-
 from src.DiGraph import DiGraph
 from src.GraphAlgoInterface import GraphAlgoInterface
 from src.GraphInterface import GraphInterface
-
 import matplotlib.pyplot as plt
 import numpy as np
+
 
 class GraphAlgo(GraphAlgoInterface):
     """This abstract class represents the algorithms of a graph."""
@@ -92,7 +89,7 @@ class GraphAlgo(GraphAlgoInterface):
         https://en.wikipedia.org/wiki/Dijkstra's_algorithm
         """
         path_list = []
-        path_size = -1
+        path_size = float("inf")
         node2 = self.graph_algo.get_node(id2)
         nodes = self.graph_algo.get_all_v()
         if not nodes.__contains__(id1) or not nodes.__contains__(id2):
@@ -102,7 +99,7 @@ class GraphAlgo(GraphAlgoInterface):
             path_list.append(id1)
             return path_size, path_list
 
-        self.dijkstra(id1, id2)
+        self.dijkstra(id1)
         path_size = node2.get_weight()
         if path_size != -1:
             path_list.insert(0, id2)
@@ -111,6 +108,8 @@ class GraphAlgo(GraphAlgoInterface):
                 path_list.insert(0, prev_node)
                 prev_node = self.graph_algo.get_node(prev_node).get_parent()
             path_list.insert(0, id1)
+        else:
+            path_size = float("inf")
         return path_size, path_list
 
     def connected_component(self, id1: int) -> list:
@@ -141,13 +140,11 @@ class GraphAlgo(GraphAlgoInterface):
         self.reset_nodes()
         _list = []
         for node_id in self.graph_algo.get_all_v().keys():
-            if self.graph_algo.get_node(node_id).get_info() != "grey":
+            if self.graph_algo.get_node(node_id).get_info() != "black":
                 list_of_scc = self.connected_component(node_id)
-                self.graph_algo.get_node(node_id).set_info("grey")
                 for key in list_of_scc:
-                    node = self.graph_algo.get_node(key)
-                    if node.get_info() != "grey":
-                        _list.append([node_id, key])
+                    self.graph_algo.get_node(key).set_info("black")
+                _list.append(list_of_scc)
         return _list
 
     def plot_graph(self) -> None:
@@ -172,6 +169,10 @@ class GraphAlgo(GraphAlgoInterface):
         plt.show()
 
     def reset_nodes(self):
+        """
+        Resets the weight, parent and info of each node in the graph
+        @return:
+        """
         nodes = self.graph_algo.get_all_v()
         for key in nodes.keys():
             node = self.graph_algo.get_node(key)
@@ -179,14 +180,18 @@ class GraphAlgo(GraphAlgoInterface):
             node.set_parent(-1)
             node.set_info("white")
 
-    def dijkstra(self, src: int, dest: int):
+    def dijkstra(self, src: int):
+        """
+        The method checks what the shortest path from src to each node in the graph
+        and updates the weight(path_size) and the parent(path_list) of each node
+        @param src:
+        @return:
+        """
         queue = PriorityQueue()
         self.reset_nodes()
         queue.put(src)
-        current = queue.get()
-        queue.put(src)
         self.graph_algo.get_node(src).set_weight(0)
-        while not queue.empty() and current != dest:
+        while not queue.empty():
             current = queue.get()
             curr_node = self.graph_algo.get_node(current)
             curr_node.set_info("black")
