@@ -1,3 +1,4 @@
+import json
 import random
 from src.GraphInterface import GraphInterface
 
@@ -8,44 +9,90 @@ class Node:
     def __init__(self, key: int, pos: tuple = None):
         self.key = key
         self.pos = pos
-        self.weight = 0.0
+        self.weight = 0
         self.info = ""
         self.parent = None
         self.hashIn = {}
         self.hashOut = {}
-        if pos is None:
-            x = random.uniform(35.001, 35.999)
-            y = random.uniform(32.001, 32.999)
-            self.pos = (x, y, 0.0)
 
     def get_key(self) -> int:
+        """
+        return the ID of the node
+        :return: The ID of the node
+        """
         return self.key
 
     def get_pos(self):
+        """
+        Returns the position of the node
+        if the there is no position to the node it will update in random location
+        :return: The position of the node
+        """
+        if self.pos is None:
+            x = random.uniform(32.001, 32.999)
+            y = random.uniform(35.001, 35.999)
+            self.pos = (x, y, 0)
         return self.pos
 
     def get_weight(self) -> float:
+        """
+        Returns the distance
+        :return: The distance
+        """
         return self.weight
 
     def set_weight(self, w: float):
+        """
+        Sets the distance
+        :param w:
+        :return:
+        """
         self.weight = w
 
     def get_info(self) -> str:
+        """
+        Returns the info of the node
+        :return: The info of the node
+        """
         return self.info
 
     def set_info(self, s: str):
+        """
+        Sets the info of the node
+        :param s:
+        :return:
+        """
         self.info = s
 
     def get_parent(self):
+        """
+        Returns the parent of the node
+        :return: The parent of the node
+        """
         return self.parent
 
     def set_parent(self, node_id: int):
+        """
+        Sets the parent of the node
+        :param node_id:
+        :return:
+        """
         self.parent = node_id
 
     def get_hashIn(self) -> dict:
+        """
+        Returns the incoming edges list
+        :return: The incoming edges list
+        """
         return self.hashIn
 
     def add_hashIn(self, node_id: int, weight: float) -> bool:
+        """
+        Adds the node_id to the incoming edges list with the weight of the edge
+        :param node_id:
+        :param weight:
+        :return: True if the node added successfully False if not
+        """
         if self.key is not node_id:
             if self.hashIn.get(node_id):
                 if self.hashIn.get(node_id) != weight:
@@ -55,15 +102,38 @@ class Node:
         return False
 
     def remove_hashIn(self, node_id: int) -> bool:
+        """
+        Removes node from the incoming edges list
+        :param node_id:
+        :return: True if the node removed successfully False if not
+        """
         if self.hashIn.get(node_id):
             del self.hashIn[node_id]
             return True
         return False
 
+    def set_hashIn(self, _dict: dict):
+        """
+        Sets incoming edges list
+        :param _dict:
+        :return:
+        """
+        self.hashIn = _dict
+
     def get_hashOut(self) -> dict:
+        """
+        Returns the outgoing edges list
+        :return: The outgoing edges list
+        """
         return self.hashOut
 
     def add_hashOut(self, node_id: int, weight: float) -> bool:
+        """
+        Adds the node_id to the outgoing edges list with the weight of the edge
+        :param node_id:
+        :param weight:
+        :return: True if the node added successfully False if not
+        """
         if self.key is not node_id:
             if self.hashOut.get(node_id):
                 if self.hashOut.get(node_id) != weight:
@@ -73,10 +143,23 @@ class Node:
         return False
 
     def remove_hashOut(self, node_id: int) -> bool:
+        """
+        Removes node from the outgoing edges list
+        :param node_id:
+        :return: True if the node removed successfully False if not
+        """
         if self.hashOut.get(node_id):
             del self.hashOut[node_id]
             return True
         return False
+
+    def set_hashOut(self, _dict: dict):
+        """
+        Sets outgoing edges list
+        :param _dict:
+        :return:
+        """
+        self.hashOut = _dict
 
     def __eq__(self, other):
         if self is None:
@@ -258,3 +341,15 @@ class DiGraph(GraphInterface):
         if other is None or self.__class__ != other.__class__:
             return False
         return self.nodes.__eq__(other.nodes)
+
+    def __repr__(self):
+        _info = []
+        _dict = {}
+        _str = f"Graph: |V| = {len(self.nodes)}, |E| = {self.num_of_edges}"
+        for node_id in self.nodes.keys():
+            _dict[node_id] = f"{node_id}: |edges out| {len(self.all_out_edges_of_node(node_id))} |edges in| {len(self.all_in_edges_of_node(node_id))}"
+        _info.append(_str)
+        _info.append(repr(_dict))
+        graph = "\n".join(_info)
+        return graph
+

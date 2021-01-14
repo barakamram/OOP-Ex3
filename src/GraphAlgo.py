@@ -1,6 +1,6 @@
 import json
 from typing import List
-from queue import PriorityQueue
+from queue import PriorityQueue, Queue
 from matplotlib.patches import ConnectionPatch
 from src.DiGraph import DiGraph
 from src.GraphAlgoInterface import GraphAlgoInterface
@@ -37,10 +37,10 @@ class GraphAlgo(GraphAlgoInterface):
                     key = node.get("id")
                     pos = None
                     if node.get("pos") is not None:
-                        lp = node.get("pos").split(",")
-                        x = lp[0]
-                        y = lp[1]
-                        z = lp[2]
+                        node_pos = node.get("pos").split(",")
+                        x = node_pos[0]
+                        y = node_pos[1]
+                        z = node_pos[2]
                         pos = (x, y, z)
                     graph.add_node(key, pos)
                 for edge in load.get("Edges"):
@@ -98,7 +98,6 @@ class GraphAlgo(GraphAlgoInterface):
             path_size = 0
             path_list.append(id1)
             return path_size, path_list
-
         self.dijkstra(id1)
         path_size = node2.get_weight()
         if path_size != -1:
@@ -122,11 +121,14 @@ class GraphAlgo(GraphAlgoInterface):
         If the graph is None or id1 is not in the graph, the function should return an empty list []
         """
         _list = []
-        if self.graph_algo.get_all_v().__contains__(id1):
-            edges = self.graph_algo.all_out_edges_of_node(id1)
-            for node_id in edges:
-                if self.graph_algo.all_out_edges_of_node(node_id).__contains__(id1):
-                    _list.append(node_id)
+        _dict = {}
+        if self.get_graph().get_all_v().__contains__(id1):
+            dfs_list = self.dfs(id1)
+            self.replace_dicts()
+            for node_id in dfs_list:
+                _dict[node_id] = "visited"
+            _list = self.dfs(id1, _dict)
+            self.replace_dicts()
         return _list
 
     def connected_components(self) -> List[list]:
@@ -154,16 +156,16 @@ class GraphAlgo(GraphAlgoInterface):
         Otherwise, they will be placed in a random but elegant manner.
         @return: None
         """
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(8, 6))
         for key in self.graph_algo.get_all_v().keys():
             node = self.graph_algo.get_node(key)
             x, y, z = node.get_pos()
             src = np.array([x, y])
-            ax.annotate(node.get_key(), (x, y), color='black')
-            for edge in self.graph_algo.all_out_edges_of_node(key).keys():
-                x, y, z = self.graph_algo.get_node(edge).get_pos()
+            ax.annotate(node.get_key(), (x, y), color="black")
+            for id2 in self.graph_algo.all_out_edges_of_node(key).keys():
+                x, y, z = self.graph_algo.get_node(id2).get_pos()
                 dest = np.array([x, y])
-                ax.plot([src[0], dest[0]], [src[1], dest[1]], "o", color='red')
+                ax.plot([src[0], dest[0]], [src[1], dest[1]], "o", color="red")
                 ax.add_artist(ConnectionPatch(src, dest, "data", "data", shrinkA=5, shrinkB=5, arrowstyle="->", color="grey"))
         plt.title("Graph")
         plt.show()
@@ -209,3 +211,39 @@ class GraphAlgo(GraphAlgoInterface):
                     next_node.set_parent(curr_node.get_key())
                     queue.put(next_node.get_key())
 
+    def replace_dicts(self):
+        """
+        Replaces between the dicts: the HashIn is the HashOut
+        and the HashOut is the HashIn
+        @return:
+        """
+        for key in self.graph_algo.get_all_v():
+            node = self.graph_algo.get_node(key)
+            _in = node.get_hashIn()
+            _out = node.get_hashOut()
+            node.set_hashIn(_out)
+            node.set_hashOut(_in)
+
+    def dfs(self, node_id: int, _dict: dict = None) -> list:
+        """
+        Returns a list of the nodes that connect to the node_id
+        and mark them as "visited"
+        @param node_id:
+        @param _dict:
+        @return:
+        """
+        self.reset_nodes()
+        _list = [node_id]
+        queue = Queue()
+        queue.put(node_id)
+        self.graph_algo.get_node(node_id).set_info("visited")
+        while not queue.empty():
+            curr_node = queue.get()
+            for id2 in self.get_graph().all_out_edges_of_node(curr_node):
+                node = self.graph_algo.get_node(id2)
+                if node.get_info() != "visited":
+                    queue.put(id2)
+                    node.set_info("visited")
+                    if _dict is None or _dict.get(id2) == "visited":
+                        _list.append(id2)
+        return _list
