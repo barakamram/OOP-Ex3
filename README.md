@@ -3,7 +3,7 @@
 ### Made by : Barak Amram & Liroy Melamed.
 
 ### DiGraph:<br/>
-*This abstract class represents a directed weighted graph.<br/>
+#This abstract class represents a directed weighted graph.<br/>
 
 | function | Description |
 | --- | --- |
@@ -24,7 +24,7 @@
 
 ### GraphAlgo:<br/>
 
-**This abstract class represents the algorithms of a graph.:**<br/>
+#This abstract class represents the algorithms of a graph.<br/>
 
 | function | Description |
 | --- | --- |
