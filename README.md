@@ -1,6 +1,6 @@
 # OOP-Ex3
 
-### Made by : Liroy Melamed & Barak Amram.
+### Made by : Barak Amram & Liroy Melamed.
 
 ### DiGraph:<br/>
 *This abstract class represents a directed weighted graph.<br/>
